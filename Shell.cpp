@@ -36,6 +36,10 @@ void Shell::launch()
             tokenizeInput();
             status = interpretCommand();
         }
+        catch (const CustomException& e) {
+            std::cout << e.what() << std::endl;
+            status = e.getStatus();
+        }
         catch (const std::exception& e) {
             std::cout << e.what() << std::endl;
             status = Status::Terminate;
@@ -91,7 +95,7 @@ Status Shell::launchProgram() const
             int error_code = errno;
             const std::string error_message =
                 "Could not execute the program — unexpected error occurred. \nError number: " + std::to_string(error_code) + "\nDescription: " + strerror(error_code);
-            throw CustomException(error_message);
+            throw CustomException(error_message, Status::Terminate);
         }
         delete[] arguments;
     }
@@ -99,7 +103,7 @@ Status Shell::launchProgram() const
         delete[] arguments;
         const std::string error_message =
             "Could not execute fork — unexpected error occurred. \nError number: " + std::to_string(error) + "\nDescription: " + strerror(error);
-        throw CustomException(error_message);
+        throw CustomException(error_message, Status::Terminate);
     }
     else {
         do {

@@ -20,7 +20,7 @@ Status Builtin::changeDirectory(const std::vector<std::string>& arguments) const
     if (int error_code = chdir(path.c_str()); error_code != 0) {
         const std::string error_message =
             "Could not change directory — unexpected error occurred. \nError number: " + std::to_string(error_code) + "\nDescription: " + strerror(error_code);
-        throw CustomException(error_message);
+        throw CustomException(error_message, Status::Continue);
     }
     return Status::Continue;
 }
