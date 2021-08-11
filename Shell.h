@@ -20,7 +20,7 @@ private:
 
 public:
     Shell();
-    void loop();
+    void launch();
     [[nodiscard]] const std::string& getHomeDirectory() const;
 
 private:

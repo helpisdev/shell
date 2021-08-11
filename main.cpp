@@ -3,7 +3,7 @@
 int main()
 {
     Shell shell = Shell();
-    shell.loop();
+    shell.launch();
 
     return EXIT_SUCCESS;
 }

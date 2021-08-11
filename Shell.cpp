@@ -26,7 +26,7 @@ Status Shell::interpretCommand() const
     return status;
 }
 
-void Shell::loop()
+void Shell::launch()
 {
     Status status;
     do {
