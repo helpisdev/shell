@@ -16,7 +16,7 @@ private:
     const std::string home_directory_{ secure_getenv("HOME") };
     std::vector<std::string> tokens_{ std::vector<std::string>() };
     const Builtin builtin_{ Builtin(this) };
-    const commandToFunctionMap_t builtin_map_ = builtin_.getBuiltinCommands();
+    const commandToFunctionMap_t builtin_map_{ builtin_.getBuiltinCommands() };
 
 public:
     Shell();

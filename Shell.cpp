@@ -4,6 +4,7 @@
 
 #include "Shell.h"
 #include "CustomException.h"
+#include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <sys/wait.h>
@@ -17,7 +18,7 @@ Status Shell::interpretCommand() const
         return Status::Continue;
     }
 
-    Status status = launchBuiltin(tokens_.at(static_cast<size_t>(0)));
+    Status status{ launchBuiltin(tokens_.at(static_cast<std::size_t>(0))) };
 
     if (status == Status::NotFound) {
         status = launchProgram();
@@ -51,7 +52,7 @@ std::string Shell::readInput()
 {
     std::string input;
     std::string line;
-    bool exit = false;
+    bool exit{ false };
     while (!exit && std::getline(std::cin >> std::ws, line)) {
         input += line;
         if (!input.ends_with('\\')) {
@@ -66,11 +67,11 @@ void Shell::tokenizeInput()
     std::string input{ readInput() };
     std::string token;
     std::string delimiter{ " " };
-    size_t position;
+    std::size_t position;
     while ((position = input.find(delimiter)) != std::string::npos) {
-        token = input.substr(static_cast<size_t>(0), position);
+        token = input.substr(static_cast<std::size_t>(0), position);
         tokens_.push_back(token);
-        input = input.erase(static_cast<size_t>(0), position + delimiter.length());
+        input = input.erase(static_cast<std::size_t>(0), position + delimiter.length());
     }
     tokens_.push_back(input);
 }
@@ -82,35 +83,41 @@ Status Shell::launchProgram() const
     int status;
 
     process_id = fork();
-    const int error = errno;
-
-    char** arguments = new char*[tokens_.size()];
-    for (auto i = static_cast<size_t>(0); i < tokens_.size(); ++i) {
-        arguments[i] = const_cast<char*>(tokens_.at(i).c_str());
-    }
+    const int fork_error{ errno };
 
     if (process_id == 0) {
-        if (execvp(arguments[0], arguments) == -1) {
-            delete[] arguments;
-            int error_code = errno;
-            const std::string error_message =
-                "Could not execute the program — unexpected error occurred. \nError number: " + std::to_string(error_code) + "\nDescription: " + strerror(error_code);
+        std::vector<char*> c_string_tokens{ std::vector<char*>(tokens_.size() + static_cast<std::size_t>(1), nullptr) };
+
+        std::ranges::transform(tokens_.begin(), tokens_.end(), c_string_tokens.begin(), [&](std::string_view token) {
+            return const_cast<char*>(token.data());
+        });
+
+        if (execvp(c_string_tokens.at(static_cast<std::size_t>(0)), c_string_tokens.data()) == -1) {
+            int error_code{ errno };
+            const std::string error_message{
+                "Could not execute execvp — unexpected error occurred. \nError number: " + std::to_string(error_code) + "\nDescription: " + strerror(error_code)
+            };
             throw CustomException(error_message, Status::Terminate);
         }
-        delete[] arguments;
     }
     else if (process_id < 0) {
-        delete[] arguments;
-        const std::string error_message =
-            "Could not execute fork — unexpected error occurred. \nError number: " + std::to_string(error) + "\nDescription: " + strerror(error);
+        const std::string error_message{
+            "Could not execute fork — unexpected error occurred. \nError number: " + std::to_string(fork_error) + "\nDescription: " + strerror(fork_error)
+        };
         throw CustomException(error_message, Status::Terminate);
     }
     else {
         do {
             wait_process_id = waitpid(process_id, &status, WUNTRACED);
+            const int wait_error{ errno };
+            if (wait_process_id == -1) {
+                const std::string error_message{
+                    "Could not execute wait — unexpected error occurred. \nError number: " + std::to_string(wait_error) + "\nDescription: " + strerror(wait_error)
+                };
+                throw CustomException(error_message, Status::Terminate);
+            }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
     }
-    delete[] arguments;
     return Status::Continue;
 }
 

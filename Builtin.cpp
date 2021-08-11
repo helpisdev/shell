@@ -15,11 +15,16 @@ Builtin::Builtin(Shell* shell)
 
 Status Builtin::changeDirectory(const std::vector<std::string>& arguments) const
 {
-    auto path_index = static_cast<size_t>(1);
-    const std::string path = arguments.size() == path_index ? shell_->getHomeDirectory() : arguments.at(path_index);
-    if (int error_code = chdir(path.c_str()); error_code != 0) {
-        const std::string error_message =
-            "Could not change directory — unexpected error occurred. \nError number: " + std::to_string(error_code) + "\nDescription: " + strerror(error_code);
+    auto path_index{ static_cast<size_t>(1) };
+    std::string path{ arguments.size() == path_index ? shell_->getHomeDirectory() : arguments.at(path_index) };
+
+    if (path.starts_with("~/")) {
+        path = shell_->getHomeDirectory() + "/" + path.substr(static_cast<std::size_t>(2), path.length());
+    }
+
+    if (chdir(path.c_str()) != 0) {
+        const int error_code{ errno };
+        const std::string error_message{ strerror(error_code) };
         throw CustomException(error_message, Status::Continue);
     }
     return Status::Continue;
