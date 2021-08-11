@@ -2,8 +2,8 @@
 // Created by ilias on 9/8/21.
 //
 
-#include "Shell.h"
-#include "CustomException.h"
+#include "Shell.hpp"
+#include "CustomException.hpp"
 #include "ErrorHandler.hpp"
 #include <algorithm>
 #include <iostream>

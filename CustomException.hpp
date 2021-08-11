@@ -2,10 +2,10 @@
 // Created by ilias on 9/8/21.
 //
 
-#ifndef MY_SHELL_CUSTOMEXCEPTION_H
-#define MY_SHELL_CUSTOMEXCEPTION_H
+#ifndef MY_SHELL_CUSTOMEXCEPTION_HPP
+#define MY_SHELL_CUSTOMEXCEPTION_HPP
 
-#include "Status.h"
+#include "Status.hpp"
 #include <exception>
 #include <string>
 
@@ -21,4 +21,4 @@ public:
     [[nodiscard]] Status getStatus() const;
 };
 
-#endif //MY_SHELL_CUSTOMEXCEPTION_H
+#endif //MY_SHELL_CUSTOMEXCEPTION_HPP

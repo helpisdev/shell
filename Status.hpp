@@ -2,8 +2,8 @@
 // Created by ilias on 9/8/21.
 //
 
-#ifndef MY_SHELL_STATUS_H
-#define MY_SHELL_STATUS_H
+#ifndef MY_SHELL_STATUS_HPP
+#define MY_SHELL_STATUS_HPP
 
 enum class Status
 {
@@ -12,4 +12,4 @@ enum class Status
     NotFound
 };
 
-#endif //MY_SHELL_STATUS_H
+#endif //MY_SHELL_STATUS_HPP

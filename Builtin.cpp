@@ -2,9 +2,9 @@
 // Created by ilias on 9/8/21.
 //
 
-#include "Builtin.h"
-#include "CustomException.h"
-#include "Shell.h"
+#include "Builtin.hpp"
+#include "CustomException.hpp"
+#include "Shell.hpp"
 #include <cstring>
 #include <filesystem>
 #include <iostream>

@@ -2,10 +2,10 @@
 // Created by ilias on 9/8/21.
 //
 
-#ifndef MY_SHELL_BUILTIN_H
-#define MY_SHELL_BUILTIN_H
+#ifndef MY_SHELL_BUILTIN_HPP
+#define MY_SHELL_BUILTIN_HPP
 
-#include "Status.h"
+#include "Status.hpp"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -30,4 +30,4 @@ public:
     const std::unordered_map<std::string, builtinFunctionPointer_t>& getBuiltinCommands() const;
 };
 
-#endif //MY_SHELL_BUILTIN_H
+#endif //MY_SHELL_BUILTIN_HPP

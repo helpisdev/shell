@@ -2,7 +2,7 @@
 // Created by ilias on 9/8/21.
 //
 
-#include "CustomException.h"
+#include "CustomException.hpp"
 #include <utility>
 
 CustomException::CustomException(std::string error_message, Status status)

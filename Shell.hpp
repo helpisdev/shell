@@ -2,10 +2,10 @@
 // Created by ilias on 9/8/21.
 //
 
-#ifndef MY_SHELL_SHELL_H
-#define MY_SHELL_SHELL_H
+#ifndef MY_SHELL_SHELL_HPP
+#define MY_SHELL_SHELL_HPP
 
-#include "Builtin.h"
+#include "Builtin.hpp"
 
 using builtinFunctionPointer_t = Status (Builtin::*)(const std::vector<std::string>&) const;
 using commandToFunctionMap_t = const std::unordered_map<std::string, builtinFunctionPointer_t>;
@@ -34,4 +34,4 @@ private:
     void handleChildProcessExit(pid_t process_id) const;
 };
 
-#endif //MY_SHELL_SHELL_H
+#endif //MY_SHELL_SHELL_HPP

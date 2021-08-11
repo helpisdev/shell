@@ -3,8 +3,8 @@
 //
 
 #include "ErrorHandler.hpp"
-#include "CustomException.h"
-#include "Status.h"
+#include "CustomException.hpp"
+#include "Status.hpp"
 #include <cstring>
 #include <string>
 
