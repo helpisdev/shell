@@ -3,4 +3,18 @@ project(my_shell)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(my_shell main.cpp)
+set(ALL_FILES
+        main.cpp
+        Shell.h
+        Shell.cpp
+        Status.h
+        Builtin.cpp
+        Builtin.h
+        CustomException.cpp
+        CustomException.h
+        )
+
+add_executable(
+        my_shell
+        ${ALL_FILES}
+)

@@ -1,6 +1,9 @@
-#include <iostream>
+#include "Shell.h"
 
-int main () {
-  std::cout << "Hello, World!" << std::endl;
-  return 0;
+int main()
+{
+    Shell shell = Shell();
+    shell.loop();
+
+    return EXIT_SUCCESS;
 }
