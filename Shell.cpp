@@ -4,8 +4,8 @@
 
 #include "Shell.h"
 #include "CustomException.h"
+#include "ErrorHandler.hpp"
 #include <algorithm>
-#include <cstring>
 #include <iostream>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -33,6 +33,7 @@ void Shell::launch()
     do {
         try {
             tokens_.clear();
+            c_string_tokens_.clear();
             std::cout << "$ " << std::flush;
             tokenizeInput();
             status = interpretCommand();
@@ -65,65 +66,56 @@ std::string Shell::readInput()
 void Shell::tokenizeInput()
 {
     std::string input{ readInput() };
-    std::string token;
     std::string delimiter{ " " };
     std::size_t position;
     while ((position = input.find(delimiter)) != std::string::npos) {
-        token = input.substr(static_cast<std::size_t>(0), position);
+        std::string token{ input.substr(static_cast<std::size_t>(0), position) };
         tokens_.push_back(token);
         input = input.erase(static_cast<std::size_t>(0), position + delimiter.length());
     }
     tokens_.push_back(input);
+
+    c_string_tokens_.resize(tokens_.size() + static_cast<std::size_t>(1), nullptr);
+    std::ranges::transform(tokens_.begin(), tokens_.end(), c_string_tokens_.begin(), [](std::string_view token) {
+        return const_cast<char*>(token.data());
+    });
 }
 
 Status Shell::launchProgram() const
 {
-    pid_t process_id;
-    pid_t wait_process_id;
-    int status;
-
-    process_id = fork();
+    pid_t process_id{ fork() };
     const int fork_error{ errno };
 
     if (process_id == 0) {
-        std::vector<char*> c_string_tokens{ std::vector<char*>(tokens_.size() + static_cast<std::size_t>(1), nullptr) };
-
-        std::ranges::transform(tokens_.begin(), tokens_.end(), c_string_tokens.begin(), [&](std::string_view token) {
-            return const_cast<char*>(token.data());
-        });
-
-        if (execvp(c_string_tokens.at(static_cast<std::size_t>(0)), c_string_tokens.data()) == -1) {
-            int error_code{ errno };
-            const std::string error_message{
-                "Could not execute execvp — unexpected error occurred. \nError number: " + std::to_string(error_code) + "\nDescription: " + strerror(error_code)
-            };
-            throw CustomException(error_message, Status::Terminate);
-        }
+        launchChildProcess();
     }
     else if (process_id < 0) {
-        const std::string error_message{
-            "Could not execute fork — unexpected error occurred. \nError number: " + std::to_string(fork_error) + "\nDescription: " + strerror(fork_error)
-        };
-        throw CustomException(error_message, Status::Terminate);
+        ErrorHandler::handleForkError(fork_error);
     }
     else {
-        do {
-            wait_process_id = waitpid(process_id, &status, WUNTRACED);
-            const int wait_error{ errno };
-            if (wait_process_id == -1) {
-                const std::string error_message{
-                    "Could not execute wait — unexpected error occurred. \nError number: " + std::to_string(wait_error) + "\nDescription: " + strerror(wait_error)
-                };
-                throw CustomException(error_message, Status::Terminate);
-            }
-        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+        handleChildProcessExit(process_id);
     }
     return Status::Continue;
 }
 
-const std::string& Shell::getHomeDirectory() const
+void Shell::launchChildProcess() const
 {
-    return home_directory_;
+    if (execvp(c_string_tokens_.at(static_cast<std::size_t>(0)), c_string_tokens_.data()) == -1) {
+        const int execvp_error{ errno };
+        ErrorHandler::handleExecError(execvp_error);
+    }
+}
+
+void Shell::handleChildProcessExit(pid_t process_id) const
+{
+    int status;
+    do {
+        pid_t wait_process_id{ waitpid(process_id, &status, WUNTRACED) };
+        const int wait_error{ errno };
+        if (wait_process_id == -1) {
+            ErrorHandler::handleWaitError(wait_error);
+        }
+    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 }
 
 Status Shell::launchBuiltin(const std::string& builtin) const
@@ -132,4 +124,9 @@ Status Shell::launchBuiltin(const std::string& builtin) const
         return (builtin_.*builtin_map_.at(builtin))(tokens_);
     }
     return Status::NotFound;
+}
+
+const std::string& Shell::getHomeDirectory() const
+{
+    return home_directory_;
 }

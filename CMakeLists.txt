@@ -12,6 +12,8 @@ set(ALL_FILES
         Builtin.h
         CustomException.cpp
         CustomException.h
+        ErrorHandler.cpp
+        ErrorHandler.hpp
         )
 
 add_executable(

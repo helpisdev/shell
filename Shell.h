@@ -15,6 +15,7 @@ class Shell
 private:
     const std::string home_directory_{ secure_getenv("HOME") };
     std::vector<std::string> tokens_{ std::vector<std::string>() };
+    std::vector<char*> c_string_tokens_{ std::vector<char*>() };
     const Builtin builtin_{ Builtin(this) };
     const commandToFunctionMap_t builtin_map_{ builtin_.getBuiltinCommands() };
 
@@ -29,6 +30,8 @@ private:
     Status interpretCommand() const;
     [[nodiscard]] Status launchBuiltin(const std::string& builtin) const;
     Status launchProgram() const;
+    void launchChildProcess() const;
+    void handleChildProcessExit(pid_t process_id) const;
 };
 
 #endif //MY_SHELL_SHELL_H
