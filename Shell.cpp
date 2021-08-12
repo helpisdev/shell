@@ -67,16 +67,24 @@ void Shell::tokenizeInput()
 {
     std::string input{ readInput() };
     std::string delimiter{ " " };
-    std::size_t position;
-    while ((position = input.find(delimiter)) != std::string::npos) {
-        std::string token{ input.substr(static_cast<std::size_t>(0), position) };
-        tokens_.push_back(token);
-        input = input.erase(static_cast<std::size_t>(0), position + delimiter.length());
+    bool did_finish = false;
+
+    while (!did_finish) {
+        std::size_t position = input.find(delimiter);
+        if (position == std::string::npos) {
+            did_finish = true;
+            tokens_.push_back(input);
+        }
+        else {
+            std::string token = input.substr(static_cast<std::size_t>(0), position);
+            tokens_.push_back(token);
+            input = input.erase(static_cast<std::size_t>(0), position + delimiter.length());
+        }
     }
-    tokens_.push_back(input);
 
     c_string_tokens_.resize(tokens_.size() + static_cast<std::size_t>(1), nullptr);
-    std::ranges::transform(tokens_.begin(), tokens_.end(), c_string_tokens_.begin(), [](std::string_view token) {
+
+    std::ranges::transform(tokens_.begin(), tokens_.end(), c_string_tokens_.begin(), [](std::string& token) {
         return token.data();
     });
 }
@@ -100,7 +108,7 @@ Status Shell::launchProgram() const
 
 void Shell::launchChildProcess() const
 {
-    if (execvp(c_string_tokens_.at(static_cast<std::size_t>(0)), const_cast<char* const*>(c_string_tokens_.data())) == -1) {
+    if (execvp(c_string_tokens_.at(static_cast<std::size_t>(0)), c_string_tokens_.data()) == -1) {
         const int execvp_error{ errno };
         ErrorHandler::handleExecError(execvp_error);
     }
