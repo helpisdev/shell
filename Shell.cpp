@@ -77,7 +77,7 @@ void Shell::tokenizeInput()
 
     c_string_tokens_.resize(tokens_.size() + static_cast<std::size_t>(1), nullptr);
     std::ranges::transform(tokens_.begin(), tokens_.end(), c_string_tokens_.begin(), [](std::string_view token) {
-        return const_cast<char*>(token.data());
+        return token.data();
     });
 }
 
@@ -100,7 +100,7 @@ Status Shell::launchProgram() const
 
 void Shell::launchChildProcess() const
 {
-    if (execvp(c_string_tokens_.at(static_cast<std::size_t>(0)), c_string_tokens_.data()) == -1) {
+    if (execvp(c_string_tokens_.at(static_cast<std::size_t>(0)), const_cast<char* const*>(c_string_tokens_.data())) == -1) {
         const int execvp_error{ errno };
         ErrorHandler::handleExecError(execvp_error);
     }
